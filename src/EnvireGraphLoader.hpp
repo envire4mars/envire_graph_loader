@@ -44,6 +44,8 @@
 
 #include <maps/grid/MLSMap.hpp>
 
+#include <mars/utils/Vector.h>
+
 namespace mars {
   namespace plugins {
     namespace EnvireGraphLoader {
