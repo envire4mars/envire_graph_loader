@@ -10,6 +10,6 @@
     <depend package="simulation/mars/interfaces" />
     <depend package="simulation/mars/sim" />
     <depend package="simulation/envire_managers" />
-    <depend package="slam/maps" />  
+    <depend package="envire/envire_maps" />  
     <tags>needs_opt</tags>
 </package>
