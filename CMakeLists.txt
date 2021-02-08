@@ -16,8 +16,9 @@ pkg_check_modules(PKGCONFIG REQUIRED
           mars_sim
           maps
           envire_core
+          envire_managers
           mars_utils
-          ccd
+          #ccd
 )
 include_directories(${PKGCONFIG_INCLUDE_DIRS})
 link_directories(${PKGCONFIG_LIBRARY_DIRS})
