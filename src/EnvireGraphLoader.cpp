@@ -36,7 +36,6 @@
 #include <mars/interfaces/sim/LoadCenter.h>
 
 #include <mars/sim/PhysicsMapper.h>
-#include <mars/sim/defines.hpp>
 
 #include <mars/utils/misc.h>
 
@@ -45,12 +44,9 @@
 #include <envire_core/graph/EnvireGraph.hpp>
 #include <envire_core/items/Item.hpp>
 
-#include <mars/utils/Vector.h>
+#include <mars/plugins/envire_managers/EnvireStorageManager.hpp>
+#include <mars/plugins/envire_managers/EnvireDefs.hpp>
 
-#define MLS_FRAME_TF_X 0.0
-#define MLS_FRAME_TF_Y 0.0
-#define MLS_FRAME_TF_Z 0.0
-#define MLS_FRAME_TF_ROT_X 0.0 
 
 using vertex_descriptor = envire::core::GraphTraits::vertex_descriptor;
 
@@ -101,28 +97,29 @@ namespace mars {
                 // the ones of the original graph instead of the hardcoded ones
                 LOG_DEBUG("[EnvireGraphLoader::loadFile] Graph loader given position");
                 std::string suffix = utils::getFilenameSuffix(filename);
-                if (! control->graph->containsFrame(center))
+                std::shared_ptr<envire::core::EnvireGraph> simGraph = envire_managers::EnvireStorageManager::instance()->getGraph();
+                if (! simGraph->containsFrame(center))
                 {
-                  control->graph->addFrame(center);
+                  simGraph->addFrame(center);
                 }
-                if (! control->graph->containsFrame(mlsFrameId))
+                if (! simGraph->containsFrame(mlsFrameId))
                 {
-                  control->graph->addFrame(mlsFrameId);
+                  simGraph->addFrame(mlsFrameId);
                 }
                 // Create the default frame for the MLS but leave it empty.
                 // The mls is loaded in the first update.
                 envire::core::Transform mlsTf(base::Time::now());
                 mlsTf.transform.translation << pos[0], pos[1], pos[2];
                 mlsTf.transform.orientation = base::AngleAxisd(double(rot[2]), base::Vector3d::UnitZ()); //Rotation for now only on Z
-                if (control->graph->containsEdge(center, mlsFrameId))
+                if (simGraph->containsEdge(center, mlsFrameId))
                 {
-                    control->graph->updateTransform(center, mlsFrameId, mlsTf);
+                    simGraph->updateTransform(center, mlsFrameId, mlsTf);
                     // TODO: Unload the mls map and load the next one 
                     // loadMLSMap(filename); 
                 }
                 else
                 {
-                    control->graph->addTransform(center, mlsFrameId, mlsTf);
+                    simGraph->addTransform(center, mlsFrameId, mlsTf);
                     loadMLSMap(filename);
                 }
                 return true;
@@ -145,7 +142,8 @@ namespace mars {
                 envire::core::FrameId dumpedFrameId(DUMPED_MLS_FRAME_NAME);
                 mlsPrec mlsAux = getMLSMap(auxMlsGraph, dumpedFrameId);
                 envire::core::Item<mlsPrec>::Ptr mlsItemPtr(new envire::core::Item<mlsPrec>(mlsAux));
-                control->graph->addItemToFrame(mlsFrameId, mlsItemPtr);
+                std::shared_ptr<envire::core::EnvireGraph> simGraph = envire_managers::EnvireStorageManager::instance()->getGraph();
+                simGraph->addItemToFrame(mlsFrameId, mlsItemPtr);
             }
 
             mlsPrec EnvireGraphLoader::getMLSMap(const envire::core::EnvireGraph & graph, envire::core::FrameId frameId)
